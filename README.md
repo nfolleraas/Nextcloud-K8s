@@ -1,0 +1,1 @@
+A simple project for learning to deploy applications in Kubernetes

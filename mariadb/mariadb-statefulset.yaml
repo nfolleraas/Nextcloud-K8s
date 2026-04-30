@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb-statefulset
+  namespace: nextcloud
+spec:
+  selector:
+    matchLabels:
+      app: mariadb
+  serviceName: mariadb-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: lscr.io/linuxserver/mariadb:latest
+        ports:
+        - containerPort: 3306
+        env:
+        - name: PUID
+          value: '1000'
+        - name: PGID
+          value: '1000'
+        - name: TZ
+          value: Europe/Copenhagen
+        - name: MYSQL_DATABASE
+          value: nextcloud-db
+        - name: MYSQL_USER
+          value: user
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: root-password
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: user-password
+        volumeMounts:
+        - name: mariadb-config
+          mountPath: /config
+      volumes:
+      - name: mariadb-config
+        persistentVolumeClaim:
+          claimName: mariadb-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-pvc
+  namespace: nextcloud
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: oci-bv # Oracle OKE's default block volume class
+  resources:
+    requests:
+      storage: 5Gi

@@ -9,7 +9,7 @@ spec:
   selector:
     matchLabels:
       app: nextcloud
-  replicas: 1
+  # replicas: 1 # Replicas are not needed when using HPA
   template:
     metadata:
       labels:
